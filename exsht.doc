@@ -1,0 +1,450 @@
+<?php
+   elseif ($sum_sh['hm_shares'] == 0){
+        $delete_line = $pdo->prepare("DELETE FROM live 
+        WHERE code = ?");
+        $delete_line->execute([$stockname]);
+        $deleted = $delete_line->rowCount();
+    }
+    
+    
+    SELL AT SOME POINT.......
+    <html>
+    <head>
+        <title>Penguin</title>
+    </head>
+<nav>
+    <a href="home.php">Home</a>
+    <a href="buy.php">Buy</a>
+    <a href="sell.php">Sell</a>
+    <form method = "get">
+    <input name="clearall" type="submit" value="CLEAR">
+    </form>
+</nav>
+    
+<body>
+    
+<?php
+include('functions.php');
+    
+if (isset($_GET["clearall"])){ 
+    $pdo->exec("DELETE FROM stock_info");
+    $pdo->exec("DELETE FROM account");
+    $pdo->exec("DELETE FROM live");
+        } 
+    
+    
+include('yahoostock.php');
+$sname = $_GET['value_key'];
+getValue($sname);
+    
+    
+    
+    
+    
+    
+    
+postLive($pdo);
+echo "<br>";
+?>
+    
+<form method = "get" >
+Stock you wish to sell: 
+<input name = "stockname" type = "text">
+<br>
+Number of shares:
+<input name = "sharenumber" type = "number"><br>
+<input name = "submit" type = "submit">
+</form>
+  
+<?php
+$stockname = '';
+$number = 0;
+      
+if (isset($_GET["submit"])) {
+    // collect value of input field
+    
+    $stockname = strtoupper($_GET['stockname']);
+    $number = $_GET['sharenumber'];
+    
+    if (empty($stockname)and empty($number)){
+        echo "Please input stockname and number of shares above.<br>";
+    }
+    elseif (empty($stockname)) {
+        echo "Please input stockname above.<br>";
+    }
+    elseif (empty($number)) {
+        echo "Please input number of shares above.<br>";
+    }
+    else {
+        getValue($stockname);
+        
+        echo "<br><br>";
+        echo "Sell stock?";
+?>
+
+    <form method = "post">
+    <input name = "sellform" type="submit" value="sell!!"> 
+    </form>
+
+        
+<?php
+    if (isset($_POST["sellform"])){ 
+    
+        $sql = 'INSERT INTO stock_info(full_name,stockname,sharenumber, 
+        boughtat,bill,buy_or_sell,percent_change,volume) VALUES (?,?,?,?,?,?,?,?)';
+        $pdo->prepare($sql)->execute([$name,$stockname,$number,$price,
+        $price*$number,True,$change,$volume]);
+    
+        $pdo->exec('INSERT INTO account (flow,balance)
+        SELECT SUM(bill),SUM(bill)+10000 FROM stock_info');  
+
+        $sql = 'SELECT count(code) FROM live 
+        WHERE code = ?';
+        $count_codes = $pdo->prepare($sql);
+        $count_codes->execute([$stockname]);
+        $live_number_of_rows = $count_codes->fetchColumn();
+        
+        $c_sharenumber = $pdo->prepare('SELECT SUM(sharenumber) 
+        AS hm_shares FROM stock_info WHERE stockname = ?');
+        $c_sharenumber->execute([$stockname]);
+        $sum_sh = $c_sharenumber->fetch(PDO::FETCH_ASSOC);  
+    
+        $c_bills = $pdo->prepare('SELECT SUM(bill)
+        AS hm_pl FROM stock_info WHERE stockname = ?');
+        $c_bills->execute([$stockname]);
+        $sum_bi = $c_bills->fetch(PDO::FETCH_ASSOC);
+    
+        updateLive();
+        echo "<br>";
+        echo 'Sale successful!';  
+    } 
+    }
+}
+
+
+function postLive($pdo) {
+    $getLive = $pdo->query("SELECT * FROM live WHERE shares_now != 0
+    ORDER BY shares_now");
+    echo "<table>";
+    echo "<tr><th>Code</th><th>Shares</th><th>PL</th></tr>";
+    foreach ($getLive as $line) {
+        $GLOBALS['sname'] = $line['code'];
+        $sname = $GLOBALS['sname'];
+        echo "<tr>";
+        echo "<td>".$sname."</td>";
+        echo "<td>".$line['shares_now']."</td>";
+        echo "<td>".$line['pl']."</td>";
+        echo "<td>".'<form method = "get">
+        <input type="submit"name="SELL"value=SELL'.$sname.'>
+        </form>'."</td>";
+        
+        if($_GET["SELL"]=="SELL"."$sname") {
+            echo "<td>"."How many shares?"."<td>";
+        }
+        echo "</tr>";
+        }
+    echo "</table>";
+}
+
+function postLive($pdo) {
+    $getLive = $pdo->query("SELECT * FROM live WHERE shares_now != 0
+    ORDER BY shares_now");
+    echo "<table>";
+    echo "<tr><th>Code</th><th>Shares</th><th>PL</th></tr>";
+    foreach ($getLive as $line) {
+        $GLOBALS['sname'] = $line['code'];
+        $sname = $GLOBALS['sname'];
+        echo "<tr>";
+        echo "<td>".$sname."</td>";
+        echo "<td>".$line['shares_now']."</td>";
+        echo "<td>".$line['pl']."</td>";
+        echo "<td>".'<form method = "get">
+        <input type="submit"name="'.$sname.'"value="SELL">
+        </form>'."</td>";
+        
+        if (isset($_GET["$sname"])) {
+            echo "<td>"."How many shares?"."<td>";
+        }
+        echo "</tr>";
+        }
+    echo "</table>";
+}
+?>
+
+        $sql = 'INSERT INTO stock_info(full_name,stockname,sharenumber, 
+        boughtat,bill,buy_or_sell,percent_change,volume) VALUES (?,?,?,?,?,?,?,?)';
+        $pdo->prepare($sql)->execute([$name,$stockname,$number,$price,
+        $price*$number,True,$change,$volume]);
+    
+        $pdo->exec('INSERT INTO account (flow,balance)
+        SELECT SUM(bill),SUM(bill)+10000 FROM stock_info');  
+
+        $sql = 'SELECT count(code) FROM live 
+        WHERE code = ?';
+        $count_codes = $pdo->prepare($sql);
+        $count_codes->execute([$stockname]);
+        $live_number_of_rows = $count_codes->fetchColumn();
+        
+        $c_sharenumber = $pdo->prepare('SELECT SUM(sharenumber) 
+        AS hm_shares FROM stock_info WHERE stockname = ?');
+        $c_sharenumber->execute([$stockname]);
+        $sum_sh = $c_sharenumber->fetch(PDO::FETCH_ASSOC);  
+    
+        $c_bills = $pdo->prepare('SELECT SUM(bill)
+        AS hm_pl FROM stock_info WHERE stockname = ?');
+        $c_bills->execute([$stockname]);
+        $sum_bi = $c_bills->fetch(PDO::FETCH_ASSOC);
+    
+        updateLive();
+        echo "<br>";
+        echo 'Sale successful!';  
+        
+$get_ev = $pdo->query('SELECT * FROM stock_info ORDER BY date_time');
+while ($ev = $get_ev->fetch()){
+    
+    $order = $ev['date_time'] . ": " . getBuy($ev['buy_or_sell']) . ' ' . 
+        makPos($ev['sharenumber']) . " share(s) of " . $ev['full_name'] . " at $" . makPos($ev['boughtat']) . "/share for $" . makPos($ev['bill']) . "<br>";
+    echo $order;
+}
+
+</body>
+</html>
+
+
+
+
+
+
+function updateCurrval() {
+    global $pdo;
+    $sql = "SELECT code FROM live";
+    $scode = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+    
+    foreach ($scode as $s) {
+        $cash = $pdo->query("SELECT cash_now FROM live WHERE code = '$s'");
+        $sn_cash = $cash->fetch(); 
+        
+        $currprice = getPrice($s);
+            $sql = "SELECT shares_now FROM live";
+            $shares = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+        $shares = $shares[array_search($s, $scode)];
+        $assets = $currprice*$shares;
+        $pl = $assets + $sn_cash['cash_now'];
+        
+        $sql = 'UPDATE live SET price_now = ?, ass_now = ?, pl = ?, pl_rate = ? WHERE code = ?';
+        $pdo->prepare($sql)->execute([$currprice,$assets,$pl,37,$s]);
+        
+        
+        
+        $sql = "SELECT deltashares FROM $s";
+        $delta = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+
+        $sql = "SELECT price FROM $s";
+        $price = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+        
+        $sql = "SELECT shares FROM $s";
+        $shs = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+        
+        print_r($delta);
+        echo "<br>";
+        print_r($price);
+        echo "<br>";
+        print_r($shs);
+
+        $sold = 0;
+        $bought = 0;
+        $own = 0;
+        foreach ($delta as $d) {
+            $p = $price[array_search($d, $delta)];
+            $sh = $shs[array_search($d, $delta)];
+            if ($d > 0) {
+                $sold += makPos($d * $p);
+            }
+            elseif ($d < 0) {
+                $bought += makPos($d * $p);
+            }
+            elseif ($d == 0) {
+                $sold += 0;
+                $bought += 0;
+            }
+            $own = $sh * getPrice($s);
+            $rate = (($bought-($sold+$own))/(($sold+$own)))*100;
+            echo "<br>";
+            echo "<br>";
+            echo "bought: ".$bought;
+            echo "<br>";
+            echo "sold: ".$sold;
+            echo "<br>";
+            echo "own: ".$own;
+            echo "<br>";
+            echo "rate: ".$rate;
+            echo "<br>";
+            echo "<br>";
+        }
+    }
+}
+
+function intoNetgetPrice() {
+    global $pdo;
+    $sql = "SELECT code FROM live";
+    $scode = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+
+    $pltotal = array();     
+    foreach ($scode as $s) {
+
+    $sql = "SELECT pl FROM $s WHERE shares = 0";
+    $zero_pls = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);  
+        foreach ($zero_pls as $z) {
+            array_push($pltotal, $z);
+        }
+
+        $newrow = $pdo->query("SELECT cash,shares
+        FROM $s ORDER BY datetime DESC LIMIT 1");
+        $sn_newrow = $newrow->fetch();    
+
+        $curr_ass = floatval($sn_newrow['shares']) * getPrice($s);
+        $curr_cash = $sn_newrow['cash'];
+        $curr_pl = $curr_ass + $curr_cash;
+
+        array_push($pltotal, $curr_pl);
+    }
+    $sumpl = array_sum($pltotal);
+    echo "sumpl: ".$sumpl;
+
+    //$sql = "INSERT INTO net (sumpl) VALUES(?)";
+    //$pdo->prepare($sql)->execute([$sumpl]); 
+}
+
+
+
+
+
+
+function updateLive($s,$n,$p) {
+    global $pdo;
+    $stockname = $s;
+    $number = $n;
+    $pricee = $p;
+    $number = floatval($number);
+    
+//if table does not exist, create it.. otherwise move along
+$sql = "SHOW TABLES LIKE '".$stockname."'";
+$result = $pdo->prepare($sql);
+$result->execute();
+$count = $result->rowCount();
+    
+    if ($count == 0) {
+        //stock never been bought before
+        //table does not exist
+        $pdo->exec("CREATE TABLE $stockname (
+            ID INT NOT NULL AUTO_INCREMENT,
+            shares INT(11), 
+            deltashares INT(11), 
+            price DECIMAL(10,2), 
+            avspent DECIMAL(10,2),
+            assets DECIMAL(10,2), 
+            cash DECIMAL(10,2), 
+            pl DECIMAL(10,2), 
+            plrate DECIMAL(10,2),
+            cycle INT(11),
+            spent DECIMAL(10,2),
+            datetime TIMESTAMP,
+            PRIMARY KEY (ID));");
+
+        $sql = "INSERT INTO $stockname (shares,deltashares,price,avspent, 
+        assets,cash,pl,plrate,cycle,spent) VALUES(?,?,?,?,?,?,?,?,?,?)";
+        $pdo->prepare($sql)->execute([$number*-1,$number,$pricee,
+        ($number*$pricee*-1)/$number,$number*$pricee*-1,$number*$pricee,0,0,1,abs($number*$pricee)]); 
+
+        $sql = 'INSERT INTO live (code,shares_now,price_now,av_spent,ass_now,cash_now,
+        pl,pl_rate,spent) VALUES (?,?,?,?,?,?,?,?,?)';
+        $pdo->prepare($sql)->
+            execute([$stockname,$number*-1,$pricee,($number*$pricee)/$number*-1,
+                     $number*$pricee*-1,$number*$pricee,0,0,abs($number*$pricee)]);
+        }
+    
+    elseif ($count == 1) { //table exists (cycles exist: bought stock before)
+        $sql = "SELECT count(shares) FROM $stockname WHERE shares = 0";
+        $zero_shares = $pdo->prepare($sql);
+        $zero_shares->execute();
+        $shares_number_of_zeros = $zero_shares->fetchColumn();
+        
+        $newrow = $pdo->query("SELECT shares,deltashares,cash,cycle,spent
+        FROM $stockname ORDER BY datetime DESC LIMIT 1");
+        $sn_newrow = $newrow->fetch(); 
+        
+        $current_shares = $sn_newrow['shares']-$number;
+        $delta = $number;
+        $cash = ($delta*$pricee)+$sn_newrow['cash'];
+            if ($current_shares == 0) {
+                $avspent = 0;
+            }
+            else {
+                $avspent = $cash / $current_shares;
+            }
+        $assets = $current_shares * $pricee;
+        $pl = $assets + $cash;
+        $cycle = $shares_number_of_zeros + 1;
+            if ($delta < 0) {
+                $spent = (abs($delta*$pricee)) + $sn_newrow['spent'];
+            }
+            elseif ($delta > 0) {
+                $spent = $sn_newrow['spent'];
+            }
+        $rate = $pl / $spent * 100;
+        
+        if ($sn_newrow['shares'] == 0) { //start new cycle
+            
+            $sql = "INSERT INTO $stockname (shares,deltashares,price,avspent,
+            assets,cash,pl,plrate,cycle,spent) VALUES(?,?,?,?,?,?,?,?,?,?)";
+            $pdo->prepare($sql)->execute([
+                $number*-1, //how many shares you now own
+                $number, //deltashares
+                $pricee, //price
+                $pricee*-1, //avspent
+                $number*$pricee*-1, //assets: current shares * current price
+                $number*$pricee, //cash: assets * -1
+                0, //pl
+                0, //plrate
+                $shares_number_of_zeros + 1,
+                abs($number*$pricee)]); //cycle #
+        }
+        
+        else { //continue with ongoing cycle
+            
+            $sql = "INSERT INTO $stockname (shares,deltashares,price,avspent,
+            assets,cash,pl,cycle,plrate,spent) VALUES(?,?,?,?,?,?,?,?,?,?)";
+            $pdo->prepare($sql)->execute([
+                $current_shares,
+                $delta,
+                $pricee,
+                $avspent,
+                $assets,
+                $cash,
+                $pl,
+                $cycle,
+                $rate,
+                $spent]);  
+        }
+        
+        $tolive = $pdo->query("SELECT plrate,shares,cash,avspent
+        FROM $stockname ORDER BY datetime DESC LIMIT 1");
+        $sn_tolive = $tolive->fetch(); 
+        
+        $pricee = getPrice($stockname);
+        
+        $sql = "UPDATE live SET shares_now=?, price_now=?, av_spent=?, ass_now=?, 
+        cash_now=?, pl=?, pl_rate=? WHERE code = ?";
+        $pdo->prepare($sql)->
+            execute([
+                $sn_tolive['shares'],
+                $pricee,
+                $sn_tolive['avspent'],
+                $sn_tolive['shares']*$pricee,
+                $sn_tolive['cash'],
+                ($sn_tolive['shares']*$pricee)+($sn_tolive['cash']),
+                $sn_tolive['plrate'],
+                $stockname
+        ]);
+    }
+}

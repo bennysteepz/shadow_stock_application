@@ -1,0 +1,57 @@
+<html>
+    <head>
+        <title>Penguin</title>
+    </head>
+<nav>
+    <a href="home.php">Home</a>
+    <a href="buy.php">Buy</a>
+    <a href="sell.php">Sell</a>
+    <form method = "get">
+    <input name="clearall" type="submit" value="CLEAR">
+    </form>
+</nav>
+    
+<body>
+    
+<?php
+if (isset($_GET["clearall"])){ 
+    $history = fopen("history.txt", "r+") or die("Unable to open file!");
+    ftruncate($history, 0);
+    fclose($history);
+    
+    $bills = fopen("bills.txt", "r+") or die("Unable to open file!");
+    ftruncate($bills, 0);
+    fclose($bills);
+    
+    $account = fopen("account.txt", "r+") or die("Unable to open file!");
+    ftruncate($account, 0);
+    fclose($account);
+    
+    $sales = fopen("sales.txt", "r+") or die("Unable to open file!");
+    ftruncate($sales, 0);
+    fclose($sales);
+    
+    $status = fopen("status.txt", "r+") or die("Unable to open file!");
+    ftruncate($status, 0);
+    fclose($status);
+}
+    
+echo "<br>";
+echo "Account total:<br>";   
+    
+$account = fopen("account.txt", "r") or die("Unable to open file!");
+echo "$" . fgets($account);
+fclose($account);
+    
+echo "<br><br>Recent activity:<br><br>";
+    
+$history = fopen("history.txt", "r") or die("Unable to open file!");
+while(!feof($history)) {
+echo fgets($history) . "<br>";
+}
+fclose($history);
+    
+?>
+
+</body>
+</html>

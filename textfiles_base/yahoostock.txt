@@ -1,0 +1,65 @@
+<?php
+
+include_once('class.yahoostock.php');
+
+$objYahooStock = new YahooStock;
+ 
+/**
+    Add format/parameters to be fetched
+    
+    s = Symbol
+    n = Name
+    l1 = Last Trade (Price Only)
+    d1 = Last Trade Date
+    t1 = Last Trade Time
+    c = Change and Percent Change
+    v = Volume
+ */
+$objYahooStock->addFormat("snl1d1t1cv"); 
+ 
+/**
+    Add company stock code to be fetched
+    
+    msft = Microsoft
+    amzn = Amazon
+    yhoo = Yahoo
+    goog = Google
+    aapl = Apple
+ */
+
+$objYahooStock->addStock($stockname);
+
+ 
+/**
+ * Printing out the data
+*/ 
+
+foreach( $objYahooStock->getQuotes() as $code => $stock)
+{ 
+    $kode = $stock[1]; 
+    $name = $stock[3];
+    $price = $stock[4];
+    $date = $stock[5]; 
+    $time = $stock[7]; 
+    $change = $stock[9]; 
+    $volume = $stock[10]; 
+}
+
+if (isset($price)) {
+    //echo "Stock Code: " . $kode //code 
+    echo $name . "<br><br>"; //name
+    echo "Last Trade Price: $" . $price;//last trade price
+    echo "<br>";
+    echo "Last Trade Date: " . $date; //last trade date
+    echo "<br>";
+    echo "Last Trade Time: " . $time; //last trade time
+    echo "<br>";
+    echo "Change and Percent Change: " . $change; //change and percent change
+    echo "<br>";
+    echo "Volume: " . $volume; //volume
+    echo "<br>";
+}
+else {
+    echo "Stockname invalid. Please try again.";
+}
+?>

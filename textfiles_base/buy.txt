@@ -1,0 +1,150 @@
+<html>
+    <head>
+        <title>Penguin</title>
+    </head>
+<nav>
+    <a href="home.php">Home</a>
+    <a href="buy.php">Buy</a>
+    <a href="sell.php">Sell</a>
+    <form method = "get">
+    <input name="clearall" type="submit" value="CLEAR">
+    </form>
+</nav>
+    
+<body>       
+
+<?php
+if (isset($_GET["clearall"])){ 
+    $history = fopen("history.txt", "r+") or die("Unable to open file!");
+    ftruncate($history, 0);
+    fclose($history);
+    
+    $bills = fopen("bills.txt", "r+") or die("Unable to open file!");
+    ftruncate($bills, 0);
+    fclose($bills);
+    
+    $account = fopen("account.txt", "r+") or die("Unable to open file!");
+    ftruncate($account, 0);
+    fclose($account);
+    
+    $sales = fopen("sales.txt", "r+") or die("Unable to open file!");
+    ftruncate($sales, 0);
+    fclose($sales);
+    
+    $status = fopen("status.txt", "r+") or die("Unable to open file!");
+    ftruncate($status, 0);
+    fclose($status);
+}
+?>
+    
+<form method = "get" >
+Stock you wish to buy: 
+<input name = "stockname" type = "text">
+<br>
+Number of shares:
+<input name = "sharenumber" type = "number"><br>
+<input name = "submit" type = "submit">
+</form>
+  
+<?php
+$stockname = '';
+$number = 0;
+    
+function getAccount() {  
+        $account = 10000;
+        $buy_total = 0;
+        $sell_total = 0;
+        $buy_array = file("bills.txt"); 
+        $sell_array = file("sales.txt");
+    
+        foreach($buy_array as $ind_bill) {
+        $buy_total += floatval($ind_bill);
+        $buy_total = sprintf("%.2f",$buy_total);
+    }
+        foreach($sell_array as $ind_sale) {
+        $sell_total += floatval($ind_sale);
+        $sell_total = sprintf("%.2f",$sell_total);
+    }
+        $total = $sell_total - $buy_total;
+        $account += $total;
+        $account = sprintf("%.2f",$account);
+        return $account;
+}
+/* 
+function Status($stockname,$number) { 
+    $status_array = file("status.txt"); 
+    
+    foreach($status_array as $line) {
+        if (strpos($status_array,$stockname) !== false){
+            echo strpos($status,$stockname);
+        }
+        else {
+            return $stockname . "," . $number;
+        }
+    }
+}
+*/
+if (isset($_GET["submit"])) {
+    // collect value of input field
+    $stockname = strtoupper($_GET['stockname']);
+    $number = $_GET['sharenumber'];
+    if (empty($stockname)and empty($number)){
+        echo "Please input stockname and number of shares above.<br>";
+    }
+    elseif (empty($stockname)) {
+        echo "Please input stockname above.<br>";
+    }
+    elseif (empty($number)) {
+        echo "Please input number of shares above.<br>";
+    }
+    else {
+        include_once('yahoostock.php');
+        echo "<br><br>";
+        
+        $bill = sprintf("%.2f",$number*floatval($price));
+        
+        echo "Buy " . $number . " share(s) of " . $name . " for $" . $bill . "?<br>"; 
+        ?> 
+    
+    <form method = "post">
+    <input name = "buyform" type="submit" value="buy!!"> 
+    </form>
+    
+    <!--<div id = "display" style = "display: none">-->
+        
+        <?php
+    
+    if (isset($_POST["buyform"])){ 
+        
+        $bills = fopen("bills.txt", "a+") or die("Unable to open file!");
+        fputs($bills, $bill . "\n");
+        fclose($bills);
+        
+        echo '<br>';
+        $summ = $date . ' ' . $time . ': purchased ' . $number . ' share(s) of ' . $name . ' at $' . $price . '/share for $' . $bill; 
+
+        echo $summ;
+        echo '<br><br>';
+        echo 'Account total: $' . getAccount();
+        echo '<br>';
+        echo '<br>'; 
+        
+        $history = fopen("history.txt", "a+") or die("Unable to open file!");
+        fputs($history, $summ . "\n");
+        fclose($history); 
+        
+        $account_txt = fopen("account.txt", "w") or die("Unable to open file!");
+        fwrite($account_txt, getAccount());
+        fclose($account_txt);
+        /*
+        $status = fopen("status.txt", "a+") or die("Unable to open file!");
+        fputs($status, Status($stockname,$number) . "\n");
+        fclose($status); 
+        */
+        }
+    }
+}
+    ?>
+
+</body>
+</html>

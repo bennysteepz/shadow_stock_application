@@ -1,0 +1,132 @@
+function updateLive() {
+    global $pdo;
+    global $stockname;
+    global $number;
+    global $price;
+    
+    $sql = 'SELECT count(code) FROM live WHERE code = ?';
+    $count_codes = $pdo->prepare($sql);
+    $count_codes->execute([$stockname]);
+    $live_number_of_rows = $count_codes->fetchColumn();
+    
+    if ($live_number_of_rows == 0) {
+            
+                $pdo->exec("CREATE TABLE $stockname (
+                    ID INT NOT NULL AUTO_INCREMENT,
+                    shares INT(11), 
+                    deltashares INT(11), 
+                    price DECIMAL(10,2), 
+                    avspent DECIMAL(10,2),
+                    assets DECIMAL(10,2), 
+                    cash DECIMAL(10,2), 
+                    pl DECIMAL(10,2), 
+                    plrate DECIMAL(10,2),
+                    datetime TIMESTAMP,
+                    cycle INT(11),
+                    PRIMARY KEY (ID));");
+
+            $sql = 'SELECT count(code) FROM live WHERE code = ?';
+            $zero_shares = $pdo->prepare($sql);
+            $count_codes->execute([$stockname]);
+            $live_number_of_rows = $count_codes->fetchColumn();
+
+        $sql = "INSERT INTO $stockname (shares,deltashares,price,avspent, 
+        assets,cash,pl,plrate) VALUES(?,?,?,?,?,?,?,?)";
+        $pdo->prepare($sql)->execute([$number*-1,$number,$price,
+        ($number*$price*-1)/$number,$number*$price*-1,$number*$price,0,0]); 
+        
+        
+        $sql = 'INSERT INTO live (code,shares_now,price_now,av_spent,ass_now,cash_now,
+        pl,pl_rate) VALUES (?,?,?,?,?,?,?,?)';
+        $pdo->prepare($sql)->
+            execute([$stockname,$number*-1,$price,($number*$price)/$number,
+                     $number*$price*-1,$number*$price,0,0]);
+                  
+    }
+    
+    elseif ($live_number_of_rows == 1){
+        
+        $shares = $pdo->query("SELECT shares 
+        FROM $stockname ORDER BY datetime DESC LIMIT 1");
+        $sn_shares = $shares->fetch();  
+        
+        $cash = $pdo->query("SELECT cash 
+        FROM $stockname ORDER BY datetime DESC LIMIT 1");
+        $sn_cash = $cash->fetch();   
+        
+        $sql = "INSERT INTO $stockname (shares,deltashares,price,avspent,
+        assets,cash,pl) VALUES(?,?,?,?,?,?,?)";
+        $pdo->prepare($sql)->execute([
+            $sn_shares['shares']-$number,
+            $number,
+            $price,
+            $sn_cash['cash']/($sn_shares['shares']),
+            ($sn_shares['shares']-$number)*$price,
+            ($number*$price)+$sn_cash['cash'],
+            (($sn_shares['shares']-$number)*$price)+(($number*$price)+$sn_cash['cash']),
+            
+        ]); 
+        
+        $shares = $pdo->query("SELECT shares 
+        FROM $stockname ORDER BY datetime DESC LIMIT 1");
+        $sn_shares = $shares->fetch();  
+        
+        $cash = $pdo->query("SELECT cash 
+        FROM $stockname ORDER BY datetime DESC LIMIT 1");
+        $sn_cash = $cash->fetch(); 
+        
+        $avspent = $pdo->query("SELECT avspent 
+        FROM $stockname ORDER BY datetime DESC LIMIT 1");
+        $sn_avspent = $avspent->fetch(); 
+        
+        $sql = "SELECT ID FROM $stockname";
+        $id = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);        
+        
+        $sql = "SELECT deltashares FROM $stockname";
+        $delta = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+
+        $sql = "SELECT price FROM $stockname";
+        $pri = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
+        
+        $sql = "SELECT shares FROM $stockname";
+        $shs = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);       
+
+        $sold = 0;
+        $bought = 0;
+        foreach ($id as $i) {
+            $d = $delta[array_search($i, $id)];
+            $p = $pri[array_search($i, $id)];
+            $sh = $shs[array_search($i, $id)];
+            if ($d > 0) {
+                $sold += makPos($d * $p);
+            }
+            elseif ($d < 0) {
+                $bought += makPos($d * $p);
+            }
+            elseif ($d == 0) {
+                $sold += 0;
+                $bought += 0;
+            }
+            $own = $sh * $p;
+        }
+        $rate = (($bought-($sold+$own))/(($sold+$own)))*100;
+        
+        $sql = "UPDATE $stockname SET plrate = ? ORDER BY datetime DESC LIMIT 1";
+        $pdo->prepare($sql)->execute([$rate]);
+        
+        $sql = "UPDATE live SET shares_now=?, price_now=?, av_spent=?, ass_now=?, 
+        cash_now=?, pl=?, pl_rate = ? WHERE code = ?";
+        $pdo->prepare($sql)->
+            execute([
+                $sn_shares['shares'],
+                getPrice($stockname),
+                $sn_avspent['avspent'],
+                $sn_shares['shares']*getPrice($stockname),
+                $sn_cash['cash'],
+                ($sn_shares['shares']*getPrice($stockname))+($sn_cash['cash']),
+                $rate,
+                $stockname
+        ]);
+
+    }   
+}

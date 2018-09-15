@@ -1,0 +1,63 @@
+<?php
+include('functions.php');
+setlocale(LC_MONETARY, 'en_US');
+?>
+<html>
+    <head>
+        <title>Penguin</title>
+
+    </head>
+<nav>
+    <a href="home.php">Home</a>
+    <a href="buy.php">Buy</a>
+    <a href="sell.php">Sell</a>
+    <a href="history.php">History</a>
+    <form method = "get">
+    <input name="clearall" type="submit" value="CLEAR">
+    </form>
+</nav>
+    
+<h1>Home</h1>
+    
+<body>
+
+<div id="refresh_currval"> 
+    <?php postLive(); ?>
+</div> 
+    
+<div id="add_points"> 
+</div> 
+    
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/
+libs/jquery/1.3.0/jquery.min.js"></script>
+<script type="text/javascript">
+    
+function loadlink(){
+    $('#refresh_currval').load('record_count.php',function test() {
+         $(this).unwrap();
+    });
+}
+function loadlink2(){
+    $('#refresh_currval').load('addpoints.php',function test2() {
+         $(this).unwrap();
+    });
+}
+loadlink(); // This will run on page load
+setInterval(function test(){
+    loadlink() // this will run after every x second(s)
+}, 5000);
+setInterval(function test2(){
+    loadlink2() // this will run after every x second(s)
+}, 1800000);
+</script>    
+     
+<?php
+if (isset($_GET["clearall"])){ 
+    $pdo->exec("DELETE FROM stock_info");
+    $pdo->exec("DELETE FROM account");
+    $pdo->exec("DELETE FROM live");
+} 
+?>
+
+</body>
+</html>

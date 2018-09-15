@@ -1,0 +1,9 @@
+2/24/2017 4:00pm: purchased 10 share(s) of Apple Inc. at $136.66/share for $1366.60
+2/24/2017 4:01pm: purchased 30 share(s) of United States Steel Corporation at $37.01/share for $1110.30
+2/24/2017 4:00pm: purchased 8 share(s) of AK Steel Holding Corporation at $8.02/share for $64.16
+2/27/2017 11:27am: sold 10 share(s) of Apple Inc. at $136.9401/share for $1369.40
+2/27/2017 11:28am: sold 30 share(s) of United States Steel Corporation at $38.42/share for $1152.60
+2/27/2017 11:28am: sold 8 share(s) of AK Steel Holding Corporation Co at $8.37/share for $66.96
+2/27/2017 4:00pm: purchased 6 share(s) of Tesla Inc.  at $246.23/share for $1477.38
+2/28/2017 4:00pm: purchased 6 share(s) of Tesla Inc.  at $249.99/share for $1499.94
+2/28/2017 4:00pm: sold 12 share(s) of Tesla Inc.  at $249.99/share for $2999.88
